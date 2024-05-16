@@ -4,12 +4,16 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.os.Handler;
+import android.os.Message;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.AttributeSet;
 import android.view.View;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.logging.LogRecord;
 
 public class Clock extends View {
 
@@ -97,7 +101,7 @@ public class Clock extends View {
         mCenterY = halfWidth;
         mRadius = halfWidth;
         PANEL_RADIUS = mRadius;
-        HOUR_POINTER_LENGTH = PANEL_RADIUS - 400;
+        HOUR_POINTER_LENGTH = PANEL_RADIUS - 350;
         MINUTE_POINTER_LENGTH = PANEL_RADIUS - 250;
         SECOND_POINTER_LENGTH = PANEL_RADIUS - 150;
 
@@ -106,6 +110,14 @@ public class Clock extends View {
         drawNeedles(canvas);
 
         // todo 每一秒刷新一次，让指针动起来
+        Handler handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                invalidate();
+            }
+        };
+        handler.postDelayed(runnable,1000);
 
     }
 
@@ -160,13 +172,15 @@ public class Clock extends View {
     private void drawNeedles(final Canvas canvas) {
         Calendar calendar = Calendar.getInstance();
         Date now = calendar.getTime();
-        int nowHours = now.getHours();
+        int nowHours = now.getHours()+8;
         int nowMinutes = now.getMinutes();
         int nowSeconds = now.getSeconds();
+        System.out.println(nowHours);
         // 画秒针
         drawPointer(canvas, 2, nowSeconds);
         // 画分针
         // todo 画分针
+        drawPointer(canvas, 1, nowMinutes);
         // 画时针
         int part = nowMinutes / 12;
         drawPointer(canvas, 0, 5 * nowHours + part);
@@ -189,7 +203,9 @@ public class Clock extends View {
                 break;
             case 1:
                 // todo 画分针，设置分针的颜色
-
+                degree = value * UNIT_DEGREE;
+                mNeedlePaint.setColor(Color.YELLOW);
+                pointerHeadXY = getPointerHeadXY(MINUTE_POINTER_LENGTH, degree);
                 break;
             case 2:
                 degree = value * UNIT_DEGREE;
@@ -208,6 +224,4 @@ public class Clock extends View {
         xy[1] = (float) (mCenterY - pointerLength * Math.cos(degree));
         return xy;
     }
-
-
 }
